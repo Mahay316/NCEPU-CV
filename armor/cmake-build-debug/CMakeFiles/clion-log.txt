@@ -1,9 +1,0 @@
-"D:\Program Files\CMake\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - MinGW Makefiles" D:\CLionProjects\robomaster\armor
--- OpenCV ARCH: x64
--- OpenCV RUNTIME: mingw
--- OpenCV STATIC: OFF
--- Found OpenCV 4.2.0 in D:/opencv/mingw-build/install/x64/mingw/lib
--- You might need to add D:/opencv/mingw-build/install/x64/mingw/bin to your PATH to be able to run your applications.
--- Configuring done
--- Generating done
--- Build files have been written to: D:/CLionProjects/robomaster/armor/cmake-build-debug

@@ -38,28 +38,98 @@ float distance(const Point2f &p1, const Point2f &p2) {
 }
 
 ArmorDescriptor::ArmorDescriptor(const LightDescriptor &light1, const LightDescriptor &light2, float rotScore,
-                                 const DetectorParam &param) {
+                                 const Mat &grayImg, const DetectorParam &param) {
     m_leftLight = (light1.center.x < light2.center.x) ? light1.rect : light2.rect;
     m_rightLight = (light1.center.x > light2.center.x) ? light1.rect : light2.rect;
-
     m_rotScore = rotScore;
     m_param = param;
+    m_grayImg = grayImg;
+
+    Size leftSize(m_leftLight.size.width, m_leftLight.size.height * 2);
+    Size rightSize(m_rightLight.size.width, m_rightLight.size.height * 2);
+    RotatedRect leftResize(m_leftLight.center, leftSize, m_leftLight.angle);
+    RotatedRect rightResize(m_rightLight.center, rightSize, m_rightLight.angle);
 
     cv::Point2f left[4];
-    m_leftLight.points(left);
+    leftResize.points(left);
     cv::Point2f right[4];
-    m_rightLight.points(right);
+    rightResize.points(right);
 
 
     vertices[0] = left[3];  // 装甲左下角
     vertices[1] = left[2];  // 装甲左上角
     vertices[2] = right[1];  // 装甲右上角
     vertices[3] = right[0];  // 装甲右下角
+
+    getFrontImg();
+}
+
+void ArmorDescriptor::getFrontImg() {
+    // 左下、左上、右上、右下
+    const Point2f &
+            bl = vertices[0],
+            tl = vertices[1],
+            tr = vertices[2],
+            br = vertices[3];
+
+    // 小装甲板尺寸
+    int width = 200, height = 200;
+
+    // 根据透视关系矫正图片
+    Point2f src[4] = {Vec2f(tl), Vec2f(tr), Vec2f(br), Vec2f(bl)};
+    Point2f dst[4] = {Point2f(0.0, 0.0), Point2f(width, 0.0),
+                      Point2f(width, height), Point2f(0.0, height)};
+    const Mat perspectiveMat = getPerspectiveTransform(src, dst);
+    cv::warpPerspective(m_grayImg, m_frontImg, perspectiveMat, Size(width, height));
+    imshow("Presp", m_frontImg);
+}
+
+/**
+ * 判断装甲是否为真，即是否包含数字
+ *
+ * @return 如果装甲为真则返回识别到的数字，否则返回-1
+ */
+int ArmorDescriptor::isRealArmor(vector<Mat> &tmpl) {
+    vector<pair<int, double>> score;
+
+    // 轮流使用模板匹配，找到最优匹配
+    for (int i = 0; i < 8; i++) {
+        double min, max;  // 本次匹配到的最好得分
+        int row = m_frontImg.rows - tmpl[i].rows + 1;
+        int col = m_frontImg.cols - tmpl[i].cols + 1;
+        Mat result(row, col, CV_32FC1);
+
+        matchTemplate(m_frontImg, tmpl[i], result, TM_CCOEFF_NORMED);
+        minMaxIdx(result, &min, &max);
+
+        // 数字i+1的匹配度
+        score.emplace_back(i + 1, max);
+    }
+
+    // 各数字的得分有高到低排序
+    sort(score.begin(), score.end(), [](const pair<int, double> &a, const pair<int, double> &b) {
+        return a.second > b.second;
+    });
+
+    // 排名最高的就是识别到的数字
+    int num = score[0].first;
+    // 评分太低则认为未识别到数字
+    if (score[0].second < m_param.m_numberDetectMinScore) {
+        num = -1;
+    }
+
+    return num;
 }
 
 ArmorDetector::ArmorDetector(const DetectorParam &param, side enemy) {
     m_param = param;
     m_enemyColor = enemy;
+
+    // 加载数字识别模板，灰度图
+    string path = "../../template/";
+    for (int i = 0; i < 8; i++) {
+        m_tmpl.push_back(imread(path + to_string(i + 1) + "m.jpg", IMREAD_GRAYSCALE));
+    }
 };
 
 /**
@@ -77,7 +147,7 @@ int ArmorDetector::detect() {
     // 分离颜色通道，顺序为BGR
     split(m_img, channels);
 
-    // 分离出灯条
+    // 分离出灯条，BGR
     Mat grayImg;
     if (m_enemyColor == RED) {
         grayImg = channels.at(2) - channels.at(0);
@@ -90,6 +160,7 @@ int ArmorDetector::detect() {
     Mat kernel = getStructuringElement(MORPH_ELLIPSE, Size(3, 3));
     // 膨胀，增大识别率
     dilate(binaryImg, binaryImg, kernel);
+    imshow("RED", binaryImg);
 
     // 识别轮廓
     vector<vector<Point>> lightContours;
@@ -116,6 +187,7 @@ int ArmorDetector::detect() {
     }
     if (lightInfos.empty()) return ARMOR_NO;
 
+
     // 遍历灯条，匹配装甲板
     for (int i = 0; i < lightInfos.size(); i++) {
         for (int j = i + 1; j < lightInfos.size(); j++) {
@@ -127,6 +199,7 @@ int ArmorDetector::detect() {
             float meanHeight = (light1.height + light2.height) / 2;
             // 长度差比率，使用比率可以是筛选更具普适性
             float heightDiffRatio = abs(light1.height - light2.height) / meanHeight;
+
             if (angleDiff > m_param.m_lightMaxAngleDiff ||
                 heightDiffRatio > m_param.m_lightMaxHeightDiffRatio)
                 continue;
@@ -147,8 +220,10 @@ int ArmorDetector::detect() {
             float rotScore = -(disRatioOffset * disRatioOffset + yDiffRatio * yDiffRatio);
 
 
+            ArmorDescriptor dis(light1, light2, rotScore, channels.at(1), m_param);
+            cout << "number detected: " << dis.isRealArmor(m_tmpl) << endl;
             // 符合装甲的约束，保存装甲信息
-            m_armorInfos.emplace_back(light1, light2, rotScore, m_param);
+            m_armorInfos.push_back(dis);
         }
     }
     if (m_armorInfos.empty()) return ARMOR_NO;

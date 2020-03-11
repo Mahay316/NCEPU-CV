@@ -1,3 +1,0 @@
-D:/CLionProjects/robomaster/armor/cmake-build-debug/CMakeFiles/robomaster.dir
-D:/CLionProjects/robomaster/armor/cmake-build-debug/CMakeFiles/edit_cache.dir
-D:/CLionProjects/robomaster/armor/cmake-build-debug/CMakeFiles/rebuild_cache.dir
