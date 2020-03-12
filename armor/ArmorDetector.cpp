@@ -73,7 +73,8 @@ void ArmorDescriptor::getFrontImg() {
             br = vertices[3];
 
     // 小装甲板尺寸
-    int width = 200, height = 200;
+    // 这个尺寸不能修改，否则将导致模板匹配正确率低的问题
+    int width = 50, height = 50;
 
     // 根据透视关系矫正图片
     Point2f src[4] = {Vec2f(tl), Vec2f(tr), Vec2f(br), Vec2f(bl)};
