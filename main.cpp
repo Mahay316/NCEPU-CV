@@ -1,12 +1,11 @@
-#include <iostream>
 #include <opencv2/opencv.hpp>
-#include "ArmorDetector.h"
+#include "armor/ArmorDetector.h"
 
 int main() {
     using namespace std;
     using namespace cv;
 
-    Mat img = imread("../armor3.png");
+    Mat img = imread("../armor/armor3.png");
 
     DetectorParam param;
     ArmorDetector detector(param, ArmorDetector::RED);
