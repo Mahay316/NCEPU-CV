@@ -78,7 +78,8 @@ public:
         ARMOR_FOUND
     };
 
-    ArmorDetector(const DetectorParam &param, side enemy);
+    // tmplPath为装甲板数字匹配模板路径
+    ArmorDetector(const DetectorParam &param, side enemy, const std::string &tmplPath = "../template/");
     void loadImg(const cv::Mat &mat);
     int detect();
     std::vector<ArmorDescriptor> &getArmorInfo();

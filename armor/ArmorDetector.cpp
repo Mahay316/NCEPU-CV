@@ -122,12 +122,11 @@ int ArmorDescriptor::isRealArmor(vector<Mat> &tmpl) {
     return num;
 }
 
-ArmorDetector::ArmorDetector(const DetectorParam &param, side enemy) {
+ArmorDetector::ArmorDetector(const DetectorParam &param, side enemy, const string &path) {
     m_param = param;
     m_enemyColor = enemy;
 
     // 加载数字识别模板，灰度图
-    string path = "../template/";
     for (int i = 0; i < 8; i++) {
         m_tmpl.push_back(imread(path + to_string(i + 1) + "m.jpg", IMREAD_GRAYSCALE));
     }
