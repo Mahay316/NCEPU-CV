@@ -82,7 +82,7 @@ void ArmorDescriptor::getFrontImg() {
                       Point2f(width, height), Point2f(0.0, height)};
     const Mat perspectiveMat = getPerspectiveTransform(src, dst);
     cv::warpPerspective(m_grayImg, m_frontImg, perspectiveMat, Size(width, height));
-    imshow("Presp", m_frontImg);
+    // imshow("Presp", m_frontImg);
 }
 
 /**
@@ -161,7 +161,8 @@ int ArmorDetector::detect() {
     Mat kernel = getStructuringElement(MORPH_ELLIPSE, Size(3, 3));
     // 膨胀，增大识别率
     dilate(binaryImg, binaryImg, kernel);
-    imshow("RED", binaryImg);
+    // 检查灯条分离情况
+    // imshow("RED", binaryImg);
 
     // 识别轮廓
     vector<vector<Point>> lightContours;
