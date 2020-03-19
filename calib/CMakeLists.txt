@@ -11,5 +11,5 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 add_executable(robomaster cam_calib.cpp)
 
 # add libs the project needs
-set(OpenCV_LIBS opencv_core opencv_imgproc opencv_imgcodecs opencv_highgui)
+set(OpenCV_LIBS opencv_core opencv_imgproc opencv_imgcodecs opencv_highgui opencv_calib3d)
 target_link_libraries(robomaster ${OpenCV_LIBS})
