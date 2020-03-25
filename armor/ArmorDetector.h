@@ -59,7 +59,7 @@ private:
 public:
     cv::RotatedRect m_leftLight;
     cv::RotatedRect m_rightLight;
-    cv::Point2f vertices[4];   // 装甲的四个顶点，不包括灯条
+    std::vector<cv::Point2f> vertices;   // 装甲的四个顶点，不包括灯条
     ArmorDescriptor(const LightDescriptor &light1, const LightDescriptor &light2, float rotScore,
                     const cv::Mat &grayImg, const DetectorParam &param);
     int isRealArmor(std::vector<cv::Mat> &tmpl);

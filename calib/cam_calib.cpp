@@ -93,7 +93,7 @@ bool saveCamParam(const Mat &cameraMatrix, const Mat &distCoeffs, const string &
     }
 
     f << "CameraMatrix" << cameraMatrix;
-    f << "distCoeffs" << distCoeffs;
+    f << "DistCoeffs" << distCoeffs;
     f.release();
 
     return true;

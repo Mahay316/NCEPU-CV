@@ -55,7 +55,7 @@ ArmorDescriptor::ArmorDescriptor(const LightDescriptor &light1, const LightDescr
     cv::Point2f right[4];
     rightResize.points(right);
 
-
+    vertices.resize(4);
     vertices[0] = left[3];  // 装甲左下角
     vertices[1] = left[2];  // 装甲左上角
     vertices[2] = right[1];  // 装甲右上角
