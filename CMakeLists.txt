@@ -16,6 +16,6 @@ add_subdirectory(pose)
 add_executable(robomaster main.cpp)
 
 # add libs the project needs
-set(OpenCV_LIBS opencv_core opencv_imgproc opencv_imgcodecs opencv_highgui)
+set(OpenCV_LIBS opencv_core opencv_imgproc opencv_imgcodecs opencv_highgui opencv_video)
 set(EXTRA_LIBS rm_armor rm_pose)
 target_link_libraries(robomaster ${OpenCV_LIBS} ${EXTRA_LIBS})
